@@ -1,0 +1,235 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #0a0805;
+  --ink-2: #12100c;
+  --ink-3: #1c1914;
+  --gold: #c9a96e;
+  --gold-light: #e8c98a;
+  --gold-dim: #7a6040;
+  --cream: #f5efe4;
+  --cream-muted: #9a8f80;
+  --border: rgba(201, 169, 110, 0.15);
+  --glass: rgba(10, 8, 5, 0.82);
+  --success: #2ecc71;
+  --danger: #e74c3c;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink font-body text-cream antialiased;
+    background-image:
+      radial-gradient(circle at top, rgba(201, 169, 110, 0.14), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(232, 201, 138, 0.08), transparent 26%),
+      linear-gradient(180deg, #0a0805 0%, #0d0a07 100%);
+    min-height: 100vh;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+
+  ::selection {
+    background: rgba(201, 169, 110, 0.35);
+    color: var(--cream);
+  }
+
+  a,
+  button {
+    @apply transition-all duration-300;
+  }
+
+  button,
+  [role="button"] {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ink;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply text-cream placeholder:text-cream-muted;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(18, 16, 12, 0.8);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(201, 169, 110, 0.7), rgba(122, 96, 64, 0.9));
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  .section-shell {
+    @apply relative overflow-hidden px-5 py-20 sm:px-8 lg:px-12 xl:px-16;
+  }
+
+  .section-content {
+    @apply mx-auto w-full max-w-7xl;
+  }
+
+  .section-kicker {
+    @apply mb-5 text-[0.68rem] uppercase tracking-[0.42em] text-gold;
+  }
+
+  .section-title {
+    @apply font-display text-4xl leading-none tracking-tight text-cream sm:text-5xl lg:text-6xl;
+  }
+
+  .section-copy {
+    @apply max-w-2xl text-base leading-7 text-cream-muted sm:text-lg;
+  }
+
+  .gold-divider {
+    @apply mb-8 mt-6 h-px w-16 bg-gold/80;
+  }
+
+  .editorial-card {
+    @apply relative overflow-hidden border border-gold/15 bg-ink-2/90 shadow-inset backdrop-blur;
+  }
+
+  .editorial-card::before {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 45%),
+      linear-gradient(0deg, rgba(201, 169, 110, 0.06), transparent 55%);
+    content: "";
+    inset: 0;
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .shape-a {
+    border-radius: 0 34px 0 34px;
+  }
+
+  .shape-b {
+    border-radius: 30px 0 30px 0;
+  }
+
+  .shape-c {
+    border-radius: 30px 30px 0 30px;
+  }
+
+  .gold-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-gold/70 bg-gold px-6 py-3 text-sm font-medium uppercase tracking-[0.24em] text-ink shadow-gold transition-transform duration-300 hover:-translate-y-0.5 hover:bg-gold-light active:scale-[0.97];
+  }
+
+  .ghost-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-none border border-gold/40 bg-transparent px-6 py-3 text-sm font-medium uppercase tracking-[0.24em] text-cream transition-transform duration-300 hover:-translate-y-0.5 hover:border-gold hover:bg-gold/10 active:scale-[0.97];
+  }
+
+  .grain-overlay::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: -20%;
+    opacity: 0.055;
+    background: url("/textures/grain.svg");
+    animation: grain 8s steps(10) infinite;
+  }
+
+  .hero-frame {
+    background:
+      linear-gradient(180deg, rgba(10, 8, 5, 0.12), rgba(10, 8, 5, 0.78)),
+      radial-gradient(circle at 18% 20%, rgba(201, 169, 110, 0.16), transparent 26%),
+      radial-gradient(circle at 84% 28%, rgba(232, 201, 138, 0.14), transparent 20%);
+  }
+
+  .radial-spot {
+    background: radial-gradient(circle, rgba(201, 169, 110, 0.28) 0%, rgba(201, 169, 110, 0.04) 50%, transparent 72%);
+    filter: blur(12px);
+  }
+
+  .outline-label {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(201, 169, 110, 0.16);
+  }
+
+  .field-shell {
+    @apply flex min-h-[54px] w-full rounded-none border border-gold/15 bg-ink-3/80 px-4 py-3 text-sm text-cream transition-colors focus-within:border-gold/50;
+  }
+
+  .input-dark {
+    @apply form-input min-h-[54px] w-full rounded-none border-gold/15 bg-ink-3/80 px-4 py-3 text-sm text-cream placeholder:text-cream-muted focus:border-gold focus:ring-gold/30;
+  }
+
+  .textarea-dark {
+    @apply form-textarea min-h-[140px] w-full rounded-none border-gold/15 bg-ink-3/80 px-4 py-3 text-sm text-cream placeholder:text-cream-muted focus:border-gold focus:ring-gold/30;
+  }
+
+  .select-dark {
+    @apply form-select min-h-[54px] w-full rounded-none border-gold/15 bg-ink-3/80 px-4 py-3 text-sm text-cream focus:border-gold focus:ring-gold/30;
+  }
+
+  .nav-link {
+    @apply relative text-sm uppercase tracking-[0.32em] text-cream-muted transition-colors duration-300 hover:text-cream;
+  }
+
+  .nav-link::after {
+    content: "";
+    @apply absolute left-0 top-[130%] h-px w-full origin-left scale-x-0 bg-gold transition-transform duration-300;
+  }
+
+  .nav-link:hover::after,
+  .nav-link[data-active="true"]::after {
+    @apply scale-x-100;
+  }
+
+  .glass-panel {
+    @apply border border-gold/15 bg-[rgba(10,8,5,0.72)] backdrop-blur-2xl;
+  }
+
+  .skeleton-block {
+    @apply rounded-[24px] bg-[linear-gradient(110deg,rgba(255,255,255,0.02),rgba(201,169,110,0.12),rgba(255,255,255,0.02))] bg-[length:200%_100%] animate-shimmer;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .botanical-bg {
+    background-image:
+      radial-gradient(circle at top left, rgba(201, 169, 110, 0.08), transparent 36%),
+      linear-gradient(180deg, rgba(18, 16, 12, 0.72), rgba(10, 8, 5, 0.96));
+  }
+
+  .reservation-grid {
+    background-image:
+      linear-gradient(90deg, rgba(245, 239, 228, 0.03) 1px, transparent 1px),
+      linear-gradient(rgba(245, 239, 228, 0.03) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(122, 96, 64, 0.86), rgba(10, 8, 5, 1));
+    background-size: 44px 44px, 44px 44px, cover;
+  }
+}

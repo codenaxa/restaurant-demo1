@@ -1,0 +1,142 @@
+import type { MenuItemRecord } from "@/lib/types";
+
+const now = new Date().toISOString();
+
+export const seedMenu: MenuItemRecord[] = [
+  {
+    id: "seed-truffle-arancini",
+    name: "Truffle Arancini",
+    description: "Crisp saffron risotto, smoked pecorino, and black truffle crema finished tableside.",
+    price: 1280,
+    category: "Starters",
+    emoji: "🍘",
+    tag: "Chef's Pick",
+    isAvailable: true,
+    isFeatured: true,
+    sortOrder: 10,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-ocean-crudo",
+    name: "Ocean Crudo",
+    description: "Hamachi, yuzu oil, compressed melon, and basil blossom with a chilled citrus broth.",
+    price: 1590,
+    category: "Starters",
+    emoji: "🐟",
+    tag: "Seasonal",
+    isAvailable: true,
+    isFeatured: true,
+    sortOrder: 20,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-wagyu-tenderloin",
+    name: "Wagyu Tenderloin",
+    description: "Coal-seared wagyu with bone marrow jus, charred shallots, and pomme pave.",
+    price: 6490,
+    category: "Mains",
+    emoji: "🥩",
+    tag: "Signature",
+    isAvailable: true,
+    isFeatured: true,
+    sortOrder: 30,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-lobster-pappardelle",
+    name: "Lobster Pappardelle",
+    description: "House pasta, butter-poached lobster, fennel pollen, and shellfish velvet.",
+    price: 3290,
+    category: "Mains",
+    emoji: "🦞",
+    isAvailable: true,
+    isFeatured: true,
+    sortOrder: 40,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-salt-baked-celeriac",
+    name: "Salt-Baked Celeriac",
+    description: "Roasted celeriac with smoked date glaze, chestnut puree, and crispy sage.",
+    price: 2190,
+    category: "Mains",
+    emoji: "🌰",
+    tag: "Vegetarian",
+    isAvailable: true,
+    isFeatured: false,
+    sortOrder: 50,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-gold-leaf-millefeuille",
+    name: "Gold Leaf Millefeuille",
+    description: "Caramelized puff pastry, vanilla diplomat, tonka bean, and edible gold finish.",
+    price: 980,
+    category: "Desserts",
+    emoji: "✨",
+    isAvailable: true,
+    isFeatured: true,
+    sortOrder: 60,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-dark-chocolate-orbit",
+    name: "Dark Chocolate Orbit",
+    description: "Single-origin chocolate mousse, cherry compote, hazelnut praline, and cocoa tuile.",
+    price: 920,
+    category: "Desserts",
+    emoji: "🍫",
+    isAvailable: true,
+    isFeatured: false,
+    sortOrder: 70,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-midnight-martini",
+    name: "Midnight Martini",
+    description: "Vodka, espresso reduction, black cardamom, and cacao nib crema.",
+    price: 760,
+    category: "Drinks",
+    emoji: "🍸",
+    tag: "After Hours",
+    isAvailable: true,
+    isFeatured: true,
+    sortOrder: 80,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-embered-pear-spritz",
+    name: "Embered Pear Spritz",
+    description: "Sparkling pear aperitif with rosemary smoke and preserved lemon brightness.",
+    price: 690,
+    category: "Drinks",
+    emoji: "🍐",
+    isAvailable: true,
+    isFeatured: false,
+    sortOrder: 90,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "seed-salon-tasting",
+    name: "Salon Degustation",
+    description: "Seven editorial courses exploring fire, smoke, sea, and pastry in a single service.",
+    price: 8490,
+    category: "Tasting Menu",
+    emoji: "🍽️",
+    tag: "Reserve Ahead",
+    isAvailable: true,
+    isFeatured: false,
+    sortOrder: 100,
+    createdAt: now,
+    updatedAt: now
+  }
+];
