@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,6 +24,7 @@ export function AdminMenuManager() {
   const [saving, setSaving] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItemRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MenuItemRecord | null>(null);
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const loadItems = async () => {
     try {
@@ -54,13 +55,17 @@ export function AdminMenuManager() {
   const saveItem = async (values: MenuItemInput) => {
     try {
       setSaving(true);
+      const payload = {
+        ...values,
+        image: values.image ?? ""
+      };
 
       const response = await fetch(selectedItem ? `/api/menu/${selectedItem.id}` : "/api/menu", {
         method: selectedItem ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(values)
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -138,11 +143,11 @@ export function AdminMenuManager() {
     }
   };
 
-  const confirmDelete = async () => {
+  const deleteItem = async (hardDelete = false) => {
     if (!deleteTarget) return;
 
     try {
-      const response = await fetch(`/api/menu/${deleteTarget.id}`, {
+      const response = await fetch(`/api/menu/${deleteTarget.id}${hardDelete ? "?hard=true" : ""}`, {
         method: "DELETE"
       });
 
@@ -150,7 +155,7 @@ export function AdminMenuManager() {
         throw new Error(await getErrorMessage(response));
       }
 
-      toast.success("Menu item archived");
+      toast.success(hardDelete ? "Menu item deleted" : "Menu item archived");
       setDeleteTarget(null);
       if (selectedItem?.id === deleteTarget.id) {
         setSelectedItem(null);
@@ -163,19 +168,33 @@ export function AdminMenuManager() {
     }
   };
 
+  const editItem = (item: MenuItemRecord) => {
+    setSelectedItem(item);
+
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+  };
+
   return (
     <>
-      <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-        <MenuForm
-          initialItem={selectedItem}
-          isSubmitting={saving}
-          onSubmit={saveItem}
-          onCancelEdit={() => setSelectedItem(null)}
-        />
+      <div className="grid gap-6 2xl:grid-cols-[420px_minmax(0,1fr)]">
+        <div ref={formRef}>
+          <MenuForm
+            initialItem={selectedItem}
+            isSubmitting={saving}
+            onSubmit={saveItem}
+            onCancelEdit={() => setSelectedItem(null)}
+          />
+        </div>
         <MenuTable
           items={items}
           loading={loading}
-          onEdit={setSelectedItem}
+          selectedItemId={selectedItem?.id ?? null}
+          onEdit={editItem}
           onDelete={setDeleteTarget}
           onToggleField={updateToggle}
           onReorder={reorderItems}
@@ -190,12 +209,20 @@ export function AdminMenuManager() {
             </div>
             <h3 className="mt-6 font-display text-4xl text-cream">Archive this item?</h3>
             <p className="mt-4 text-sm leading-7 text-cream-muted">
-              {deleteTarget.name} will be marked unavailable and removed from the public menu.
+              {deleteTarget.name} can be archived to hide it from the public menu, or
+              permanently deleted from the admin library.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="button" className="gold-button w-full sm:w-auto" onClick={confirmDelete}>
+              <button type="button" className="gold-button w-full sm:w-auto" onClick={() => void deleteItem()}>
                 Archive Item
+              </button>
+              <button
+                type="button"
+                className="w-full border border-danger/40 bg-danger/10 px-6 py-3 text-sm font-medium uppercase tracking-[0.24em] text-danger transition-transform duration-300 hover:-translate-y-0.5 hover:border-danger/70 hover:bg-danger/15 active:scale-[0.97] sm:w-auto"
+                onClick={() => void deleteItem(true)}
+              >
+                Delete Forever
               </button>
               <button
                 type="button"

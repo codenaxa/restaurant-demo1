@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { siteConfig } from "@/lib/site";
 import {
   getReservationFieldErrors,
@@ -17,6 +19,7 @@ function buildPhoneHref(value: string) {
 }
 
 export function ReservationStrip() {
+  const variants = useScrollReveal();
   const defaultTime = siteConfig.reservationTimes[2] || siteConfig.reservationTimes[0] || "";
   const defaultTableNumber = siteConfig.tableNumbers[0]?.toString() || "";
   const [name, setName] = useState("");
@@ -94,7 +97,14 @@ export function ReservationStrip() {
   return (
     <section id="reservations" className="section-shell bg-ink">
       <div className="section-content grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="editorial-card shape-a p-8 sm:p-10">
+        <motion.div
+          className="editorial-card shape-a p-8 sm:p-10"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={variants}
+          custom={0}
+        >
           <p className="section-kicker">Restaurant Reservations</p>
           <h2 className="font-display text-4xl leading-none text-cream sm:text-5xl">
             A reservation section framed like the rest of the dining room.
@@ -106,18 +116,28 @@ export function ReservationStrip() {
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <a
+            <motion.a
               href={buildPhoneHref(siteConfig.reservationPhone)}
               className="border border-gold/15 bg-ink-3/70 px-5 py-4 transition-colors hover:border-gold/40"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={variants}
+              custom={1}
             >
               <p className="text-[0.62rem] uppercase tracking-[0.34em] text-gold">Call</p>
               <p className="mt-3 text-lg text-cream">{siteConfig.reservationPhone}</p>
-            </a>
+            </motion.a>
           </div>
-        </div>
+        </motion.div>
 
-        <form
+        <motion.form
           className="reservation-grid editorial-card shape-c border border-gold/20 p-6 sm:p-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.18 }}
+          variants={variants}
+          custom={1}
           onSubmit={async (event) => {
             event.preventDefault();
             setErrors({});
@@ -299,7 +319,7 @@ export function ReservationStrip() {
           >
             {submitting ? "Booking..." : "Reserve My Table"}
           </button>
-        </form>
+        </motion.form>
       </div>
     </section>
   );

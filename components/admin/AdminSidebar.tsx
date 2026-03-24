@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, LogOut, ShieldCheck, UtensilsCrossed } from "lucide-react";
+import { LayoutDashboard, LogOut, ShieldCheck, UtensilsCrossed, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -12,14 +12,30 @@ const links = [
   { href: "/admin/menu", label: "Menu Manager", icon: UtensilsCrossed }
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  onNavigate?: () => void;
+  onClose?: () => void;
+}
+
+export function AdminSidebar({ onNavigate, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="border-r border-gold/10 bg-ink-2/95 px-5 py-8">
-      <div className="mb-10">
-        <p className="text-[0.68rem] uppercase tracking-[0.42em] text-gold">Maison Elite</p>
-        <h2 className="mt-4 font-display text-4xl leading-none text-cream">Admin Atelier</h2>
+    <aside className="flex h-full flex-col border-r border-gold/10 bg-ink-2/95 px-5 py-8 shadow-[24px_0_60px_rgba(0,0,0,0.45)]">
+      <div className="mb-10 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[0.68rem] uppercase tracking-[0.42em] text-gold">Maison Elite</p>
+          <h2 className="mt-4 font-display text-4xl leading-none text-cream">Admin Atelier</h2>
+        </div>
+
+        <button
+          type="button"
+          className="flex h-11 w-11 items-center justify-center border border-gold/15 text-cream-muted hover:border-gold/30 hover:text-cream"
+          aria-label="Close sidebar"
+          onClick={onClose}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="space-y-2">
@@ -37,6 +53,7 @@ export function AdminSidebar() {
                   ? "border-gold/30 bg-gold/10 text-cream"
                   : "border-gold/10 text-cream-muted hover:border-gold/20 hover:text-cream"
               )}
+              onClick={onNavigate}
             >
               <Icon className="h-4 w-4" />
               {link.label}
@@ -59,8 +76,8 @@ export function AdminSidebar() {
 
       <button
         type="button"
-        className="mt-10 flex min-h-[52px] w-full items-center justify-center gap-3 border border-gold/10 text-sm uppercase tracking-[0.28em] text-cream-muted hover:border-gold/30 hover:text-cream"
-        onClick={() => signOut({ callbackUrl: "/admin/login" })}
+        className="mt-auto flex min-h-[52px] w-full items-center justify-center gap-3 border border-gold/10 text-sm uppercase tracking-[0.28em] text-cream-muted hover:border-gold/30 hover:text-cream"
+        onClick={() => void signOut({ callbackUrl: "/admin/login" })}
       >
         <LogOut className="h-4 w-4" />
         Sign Out

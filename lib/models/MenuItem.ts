@@ -8,6 +8,7 @@ export interface IMenuItem extends Document {
   price: number;
   category: MenuCategory;
   emoji: string;
+  image?: string;
   tag?: string;
   isAvailable: boolean;
   isFeatured: boolean;
@@ -23,6 +24,7 @@ const MenuItemSchema = new Schema<IMenuItem>(
     price: { type: Number, required: true, min: 0 },
     category: { type: String, required: true, enum: menuCategories },
     emoji: { type: String, default: "🍽️" },
+    image: { type: String, trim: true },
     tag: { type: String },
     isAvailable: { type: Boolean, default: true },
     isFeatured: { type: Boolean, default: false },

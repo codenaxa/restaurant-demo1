@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -15,7 +15,7 @@ import {
   useSortable,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
-import { GripVertical, Pencil, Star, Trash2 } from "lucide-react";
+import { GripVertical, Pencil, Trash2 } from "lucide-react";
 
 import type { MenuItemRecord } from "@/lib/types";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -23,6 +23,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 interface MenuTableProps {
   items: MenuItemRecord[];
   loading?: boolean;
+  selectedItemId?: string | null;
   onEdit: (item: MenuItemRecord) => void;
   onDelete: (item: MenuItemRecord) => void;
   onToggleField: (
@@ -35,6 +36,7 @@ interface MenuTableProps {
 
 interface SortableItemProps {
   item: MenuItemRecord;
+  isEditing: boolean;
   onEdit: (item: MenuItemRecord) => void;
   onDelete: (item: MenuItemRecord) => void;
   onToggleField: (
@@ -44,7 +46,48 @@ interface SortableItemProps {
   ) => void;
 }
 
-function SortableRow({ item, onEdit, onDelete, onToggleField }: SortableItemProps) {
+interface ItemVisualProps {
+  item: MenuItemRecord;
+  className?: string;
+  emojiClassName?: string;
+}
+
+function ItemVisual({ item, className, emojiClassName }: ItemVisualProps) {
+  const [imageBroken, setImageBroken] = useState(false);
+  const hasImage = Boolean(item.image && !imageBroken);
+
+  useEffect(() => {
+    setImageBroken(false);
+  }, [item.image]);
+
+  if (hasImage) {
+    return (
+      <div className={cn("overflow-hidden border border-gold/20 bg-ink", className)}>
+        <img
+          src={item.image}
+          alt={item.name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setImageBroken(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <span
+      className={cn(
+        "flex items-center justify-center rounded-full border border-gold/25 bg-gold/10 text-xl",
+        className,
+        emojiClassName
+      )}
+    >
+      {item.emoji}
+    </span>
+  );
+}
+
+function SortableRow({ item, isEditing, onEdit, onDelete, onToggleField }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id });
 
@@ -60,8 +103,9 @@ function SortableRow({ item, onEdit, onDelete, onToggleField }: SortableItemProp
       ref={setNodeRef}
       style={style}
       className={cn(
-        "grid items-center gap-4 border-b border-gold/10 px-4 py-4 text-sm text-cream md:grid-cols-[44px_1.6fr_1fr_0.8fr_0.9fr_0.7fr_0.7fr_120px]",
-        isDragging && "bg-gold/10"
+        "grid min-w-[1080px] items-center gap-4 border-b border-gold/10 px-4 py-4 text-sm text-cream xl:grid-cols-[44px_1.5fr_1fr_0.8fr_0.9fr_0.7fr_0.7fr_176px]",
+        isDragging && "bg-gold/10",
+        isEditing && "bg-gold/6 ring-1 ring-inset ring-gold/25"
       )}
     >
       <button
@@ -75,14 +119,19 @@ function SortableRow({ item, onEdit, onDelete, onToggleField }: SortableItemProp
       </button>
 
       <div className="flex items-center gap-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-gold/25 bg-gold/10 text-xl">
-          {item.emoji}
-        </span>
-        <div>
-          <p className="font-display text-2xl leading-none text-cream">{item.name}</p>
-          <p className="mt-1 text-[0.68rem] uppercase tracking-[0.3em] text-cream-muted">
-            Sort {item.sortOrder}
-          </p>
+        <ItemVisual item={item} className="h-12 w-12 rounded-2xl" />
+        <div className="min-w-0">
+          <p className="truncate font-display text-2xl leading-none text-cream">{item.name}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <p className="text-[0.68rem] uppercase tracking-[0.3em] text-cream-muted">
+              Sort {item.sortOrder}
+            </p>
+            {isEditing ? (
+              <span className="border border-gold/25 bg-gold/10 px-2 py-1 text-[0.58rem] uppercase tracking-[0.24em] text-gold">
+                Editing
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -119,27 +168,26 @@ function SortableRow({ item, onEdit, onDelete, onToggleField }: SortableItemProp
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center border border-gold/15 text-cream-muted hover:border-gold hover:text-cream"
+          className={cn(
+            "inline-flex min-h-[40px] items-center justify-center gap-2 border px-3 text-xs uppercase tracking-[0.24em]",
+            isEditing
+              ? "border-gold bg-gold/12 text-cream"
+              : "border-gold/15 text-cream-muted hover:border-gold hover:text-cream"
+          )}
           aria-label={`Edit ${item.name}`}
           onClick={() => onEdit(item)}
         >
           <Pencil className="h-4 w-4" />
+          Edit
         </button>
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center border border-gold/15 text-cream-muted hover:border-gold hover:text-gold"
-          aria-label={`Feature ${item.name}`}
-          onClick={() => onToggleField(item, "isFeatured", !item.isFeatured)}
-        >
-          <Star className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center border border-gold/15 text-cream-muted hover:border-danger/50 hover:text-danger"
+          className="inline-flex min-h-[40px] items-center justify-center gap-2 border border-danger/30 px-3 text-xs uppercase tracking-[0.24em] text-danger hover:border-danger/50"
           aria-label={`Delete ${item.name}`}
           onClick={() => onDelete(item)}
         >
           <Trash2 className="h-4 w-4" />
+          Delete
         </button>
       </div>
     </div>
@@ -149,6 +197,7 @@ function SortableRow({ item, onEdit, onDelete, onToggleField }: SortableItemProp
 export function MenuTable({
   items,
   loading = false,
+  selectedItemId = null,
   onEdit,
   onDelete,
   onToggleField,
@@ -192,7 +241,7 @@ export function MenuTable({
         </div>
       ) : (
         <>
-          <div className="hidden border-b border-gold/10 px-4 py-3 text-[0.68rem] uppercase tracking-[0.28em] text-cream-muted md:grid md:grid-cols-[44px_1.6fr_1fr_0.8fr_0.9fr_0.7fr_0.7fr_120px]">
+          <div className="hidden min-w-[1080px] border-b border-gold/10 px-4 py-3 text-[0.68rem] uppercase tracking-[0.28em] text-cream-muted xl:grid xl:grid-cols-[44px_1.5fr_1fr_0.8fr_0.9fr_0.7fr_0.7fr_176px]">
             <span>Move</span>
             <span>Item</span>
             <span>Category</span>
@@ -203,17 +252,35 @@ export function MenuTable({
             <span>Actions</span>
           </div>
 
-          <div className="md:hidden space-y-4 p-4">
+          <div className="space-y-4 p-4 xl:hidden">
             {items.map((item) => (
-              <div key={item.id} className="border border-gold/10 bg-ink-3/70 p-4">
+              <div
+                key={item.id}
+                className={cn(
+                  "border border-gold/10 bg-ink-3/70 p-4",
+                  selectedItemId === item.id && "border-gold/30 bg-gold/5"
+                )}
+              >
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-display text-2xl text-cream">
-                      {item.emoji} {item.name}
-                    </p>
-                    <p className="mt-1 text-[0.68rem] uppercase tracking-[0.28em] text-cream-muted">
-                      {item.category}
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <ItemVisual
+                      item={item}
+                      className="h-14 w-14 rounded-2xl"
+                      emojiClassName="text-2xl"
+                    />
+                    <div>
+                      <p className="font-display text-2xl text-cream">{item.name}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <p className="text-[0.68rem] uppercase tracking-[0.28em] text-cream-muted">
+                          {item.category}
+                        </p>
+                        {selectedItemId === item.id ? (
+                          <span className="border border-gold/25 bg-gold/10 px-2 py-1 text-[0.58rem] uppercase tracking-[0.24em] text-gold">
+                            Editing
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                   <p className="text-sm uppercase tracking-[0.24em] text-gold">
                     {formatCurrency(item.price)}
@@ -254,13 +321,14 @@ export function MenuTable({
             ))}
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden overflow-x-auto xl:block">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
                 {items.map((item) => (
                   <SortableRow
                     key={item.id}
                     item={item}
+                    isEditing={selectedItemId === item.id}
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onToggleField={onToggleField}

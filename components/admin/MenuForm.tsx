@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { menuCategories, type MenuItemRecord } from "@/lib/types";
 import type { MenuItemInput } from "@/lib/validators/menu-item";
@@ -20,12 +21,22 @@ const emptyValues: MenuItemInput = {
   description: "",
   price: 0,
   category: "Starters",
-  emoji: "🍽️",
+  emoji: "\u{1F37D}\uFE0F",
+  image: undefined,
   tag: undefined,
   isAvailable: true,
   isFeatured: false,
   sortOrder: 10
 };
+
+async function getUploadErrorMessage(response: Response) {
+  try {
+    const data = (await response.json()) as { error?: string };
+    return data.error || "Request failed.";
+  } catch {
+    return "Request failed.";
+  }
+}
 
 export function MenuForm({
   initialItem,
@@ -33,15 +44,22 @@ export function MenuForm({
   onSubmit,
   onCancelEdit
 }: MenuFormProps) {
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreviewBroken, setImagePreviewBroken] = useState(false);
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors }
   } = useForm<MenuItemInput>({
     resolver: zodResolver(menuItemSchema),
     defaultValues: emptyValues
   });
+
+  const imageValue = watch("image");
+  const isBusy = isSubmitting || uploadingImage;
 
   useEffect(() => {
     if (initialItem) {
@@ -51,6 +69,7 @@ export function MenuForm({
         price: initialItem.price,
         category: initialItem.category,
         emoji: initialItem.emoji,
+        image: initialItem.image,
         tag: initialItem.tag,
         isAvailable: initialItem.isAvailable,
         isFeatured: initialItem.isFeatured,
@@ -60,6 +79,50 @@ export function MenuForm({
       reset(emptyValues);
     }
   }, [initialItem, reset]);
+
+  useEffect(() => {
+    setImagePreviewBroken(false);
+  }, [imageValue]);
+
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/menu/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(await getUploadErrorMessage(response));
+      }
+
+      const data = (await response.json()) as { url: string };
+      setValue("image", data.url, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true
+      });
+
+      toast.success("Image uploaded");
+    } catch (error) {
+      toast.error("Unable to upload image", {
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+    } finally {
+      setUploadingImage(false);
+      event.target.value = "";
+    }
+  };
 
   return (
     <div className="editorial-card shape-a p-6">
@@ -148,6 +211,76 @@ export function MenuForm({
           ) : null}
         </div>
 
+        <div className="space-y-4 border border-gold/10 bg-ink-3/50 p-4">
+          <div>
+            <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.34em] text-cream-muted">
+              Image Link
+            </label>
+            <input
+              className="input-dark"
+              placeholder="https://example.com/dish.jpg or /uploads/menu/item.jpg"
+              {...register("image")}
+            />
+            {errors.image ? (
+              <p className="mt-2 text-xs text-danger">{errors.image.message as string}</p>
+            ) : (
+              <p className="mt-2 text-xs text-cream-muted">
+                Paste a direct image URL or use the uploader below.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.34em] text-cream-muted">
+              Upload Image
+            </label>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+              className="block w-full text-sm text-cream-muted file:mr-4 file:border file:border-gold/30 file:bg-gold/10 file:px-4 file:py-3 file:text-xs file:uppercase file:tracking-[0.24em] file:text-cream hover:file:border-gold"
+              disabled={isBusy}
+              onChange={handleImageUpload}
+            />
+            <p className="mt-2 text-xs text-cream-muted">
+              JPG, PNG, WEBP, AVIF, or GIF up to 5 MB.
+            </p>
+          </div>
+
+          {imageValue ? (
+            <div className="overflow-hidden border border-gold/15 bg-ink">
+              {!imagePreviewBroken ? (
+                <img
+                  src={imageValue}
+                  alt="Menu item preview"
+                  className="h-44 w-full object-cover"
+                  onError={() => setImagePreviewBroken(true)}
+                />
+              ) : (
+                <div className="flex h-44 items-center justify-center bg-ink-2 px-4 text-center text-sm text-cream-muted">
+                  Preview unavailable. Check the image link or upload another file.
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 border-t border-gold/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="truncate text-xs text-cream-muted">{imageValue}</p>
+                <button
+                  type="button"
+                  className="ghost-button w-full sm:w-auto"
+                  onClick={() =>
+                    setValue("image", undefined, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                      shouldValidate: true
+                    })
+                  }
+                >
+                  Remove Image
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
         <div>
           <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.34em] text-cream-muted">
             Sort Order
@@ -164,18 +297,32 @@ export function MenuForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex min-h-[54px] items-center gap-3 border border-gold/15 bg-ink-3/70 px-4 text-sm text-cream">
-            <input type="checkbox" className="h-5 w-5 rounded border-gold/30 bg-ink" {...register("isAvailable")} />
+            <input
+              type="checkbox"
+              className="h-5 w-5 rounded border-gold/30 bg-ink"
+              {...register("isAvailable")}
+            />
             Available
           </label>
           <label className="flex min-h-[54px] items-center gap-3 border border-gold/15 bg-ink-3/70 px-4 text-sm text-cream">
-            <input type="checkbox" className="h-5 w-5 rounded border-gold/30 bg-ink" {...register("isFeatured")} />
+            <input
+              type="checkbox"
+              className="h-5 w-5 rounded border-gold/30 bg-ink"
+              {...register("isFeatured")}
+            />
             Featured
           </label>
         </div>
 
         <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-          <button type="submit" className="gold-button w-full sm:w-auto" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : initialItem ? "Update Item" : "Add Item"}
+          <button type="submit" className="gold-button w-full sm:w-auto" disabled={isBusy}>
+            {uploadingImage
+              ? "Uploading image..."
+              : isSubmitting
+                ? "Saving..."
+                : initialItem
+                  ? "Update Item"
+                  : "Add Item"}
           </button>
           {initialItem ? (
             <button type="button" className="ghost-button w-full sm:w-auto" onClick={onCancelEdit}>

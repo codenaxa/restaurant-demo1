@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { AlertCircle } from "lucide-react";
 
 import { CategoryTabs } from "@/components/menu/CategoryTabs";
 import { MenuCard } from "@/components/menu/MenuCard";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { menuCategories, type MenuItemRecord } from "@/lib/types";
 
 type MenuCategoryFilter = "All" | (typeof menuCategories)[number];
@@ -30,6 +32,7 @@ function MenuSkeletonGrid() {
 }
 
 export function MenuGrid() {
+  const variants = useScrollReveal();
   const [items, setItems] = useState<MenuItemRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,28 +88,47 @@ export function MenuGrid() {
 
   return (
     <div className="pb-20">
-      <CategoryTabs
-        categories={categories}
-        activeCategory={activeCategory}
-        onChange={(category) => {
-          startTransition(() => setActiveCategory(category));
-        }}
-      />
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={variants}
+        custom={0}
+      >
+        <CategoryTabs
+          categories={categories}
+          activeCategory={activeCategory}
+          onChange={(category) => {
+            startTransition(() => setActiveCategory(category));
+          }}
+        />
+      </motion.div>
 
       <section className="section-shell">
         <div className="section-content">
           {loading ? <MenuSkeletonGrid /> : null}
 
           {!loading && error ? (
-            <div className="editorial-card shape-a flex flex-col items-center justify-center px-6 py-14 text-center">
+            <motion.div
+              className="editorial-card shape-a flex flex-col items-center justify-center px-6 py-14 text-center"
+              initial="hidden"
+              animate="visible"
+              variants={variants}
+              custom={1}
+            >
               <AlertCircle className="h-10 w-10 text-danger" />
               <h3 className="mt-5 font-display text-3xl text-cream">Menu unavailable</h3>
               <p className="mt-3 max-w-md text-sm leading-7 text-cream-muted">{error}</p>
-            </div>
+            </motion.div>
           ) : null}
 
           {!loading && !error && filteredItems.length === 0 ? (
-            <div className="editorial-card shape-a flex flex-col items-center justify-center px-6 py-14 text-center">
+            <motion.div
+              className="editorial-card shape-a flex flex-col items-center justify-center px-6 py-14 text-center"
+              initial="hidden"
+              animate="visible"
+              variants={variants}
+              custom={1}
+            >
               <Image
                 src="/illustrations/empty-menu.svg"
                 alt="Decorative empty menu illustration"
@@ -121,13 +143,22 @@ export function MenuGrid() {
                 Switch categories to browse the rest of the collection or republish this
                 section from the admin dashboard.
               </p>
-            </div>
+            </motion.div>
           ) : null}
 
           {!loading && !error && filteredItems.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {filteredItems.map((item, index) => (
-                <MenuCard key={item.id} item={item} index={index} />
+                <motion.div
+                  key={item.id}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.14 }}
+                  variants={variants}
+                  custom={index}
+                >
+                  <MenuCard item={item} index={index} />
+                </motion.div>
               ))}
             </div>
           ) : null}

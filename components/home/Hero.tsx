@@ -11,6 +11,14 @@ export function Hero() {
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const root = rootRef.current;
+
+    if (!root) {
+      return;
+    }
+
+    let cleanupScene = () => {};
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
@@ -50,29 +58,105 @@ export function Hero() {
         yoyo: true,
         stagger: 0.16
       });
+
+      const videoPlane = root.querySelector<HTMLElement>(".hero-video-plane");
+
+      if (!videoPlane) {
+        return;
+      }
+
+      gsap.set(videoPlane, {
+        z: -140,
+        scale: 1.14,
+        rotationX: 8,
+        rotationY: -4,
+        transformOrigin: "center center",
+        force3D: true
+      });
+      if (!window.matchMedia("(pointer: fine)").matches) {
+        return;
+      }
+
+      const handlePointerMove = (event: PointerEvent) => {
+        const bounds = root.getBoundingClientRect();
+        const offsetX = (event.clientX - bounds.left) / bounds.width - 0.5;
+        const offsetY = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+        gsap.to(videoPlane, {
+          x: offsetX * 32,
+          y: offsetY * 18,
+          rotationY: -4 + offsetX * 10,
+          rotationX: 8 - offsetY * 8,
+          duration: 0.9,
+          ease: "power3.out",
+          overwrite: "auto"
+        });
+
+      };
+
+      const resetScene = () => {
+        gsap.to(videoPlane, {
+          x: 0,
+          y: 0,
+          rotationY: -4,
+          rotationX: 8,
+          duration: 1.1,
+          ease: "power3.out"
+        });
+      };
+
+      root.addEventListener("pointermove", handlePointerMove);
+      root.addEventListener("pointerleave", resetScene);
+
+      cleanupScene = () => {
+        root.removeEventListener("pointermove", handlePointerMove);
+        root.removeEventListener("pointerleave", resetScene);
+      };
     }, rootRef);
 
-    return () => ctx.revert();
+    return () => {
+      cleanupScene();
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
       ref={rootRef}
-      className="hero-frame grain-overlay clip-diagonal relative flex min-h-[100svh] items-end overflow-hidden"
+      className="hero-frame hero-depth-scene grain-overlay clip-diagonal relative flex min-h-[100svh] items-end overflow-hidden"
     >
-      <div className="absolute inset-0">
-        <div className="radial-spot absolute left-[8%] top-[14%] h-44 w-44 rounded-full" />
-        <div className="radial-spot absolute bottom-[18%] right-[14%] h-52 w-52 rounded-full" />
-        {Array.from({ length: 18 }).map((_, index) => (
-          <span
-            key={index}
-            className="hero-particle absolute h-1.5 w-1.5 rounded-full bg-gold/45"
-            style={{
-              left: `${8 + ((index * 13) % 78)}%`,
-              top: `${12 + ((index * 17) % 66)}%`
-            }}
-          />
-        ))}
+      <div className="hero-depth-stage absolute inset-0">
+        <div className="hero-video-plane absolute inset-[-6%]">
+          <video
+            className="hero-video-media"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+          >
+            <source src="/illustrations/hero-bg.mp4" type="video/mp4" />
+          </video>
+        </div>
+
+        <div className="hero-overlay-plane absolute inset-0" />
+        <div className="hero-glass-frame absolute inset-0" />
+
+        <div className="absolute inset-0">
+          <div className="radial-spot absolute left-[8%] top-[14%] h-44 w-44 rounded-full" />
+          <div className="radial-spot absolute bottom-[18%] right-[14%] h-52 w-52 rounded-full" />
+          {Array.from({ length: 18 }).map((_, index) => (
+            <span
+              key={index}
+              className="hero-particle absolute h-1.5 w-1.5 rounded-full bg-gold/45"
+              style={{
+                left: `${8 + ((index * 13) % 78)}%`,
+                top: `${12 + ((index * 17) % 66)}%`
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="section-content relative z-10 flex w-full flex-col px-5 pb-14 pt-28 sm:px-8 lg:px-12 xl:px-16">

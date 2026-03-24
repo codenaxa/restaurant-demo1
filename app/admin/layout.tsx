@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { auth } from "@/lib/auth";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -11,11 +11,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-ink">
-      <div className="grid min-h-screen lg:grid-cols-[280px_minmax(0,1fr)]">
-        <AdminSidebar />
-        <main className="px-5 py-8 sm:px-8 lg:px-10">{children}</main>
-      </div>
-    </div>
+    <AdminShell>{children}</AdminShell>
   );
 }

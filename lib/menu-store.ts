@@ -39,6 +39,7 @@ function serializeMenuItem(doc: {
   price: number;
   category: MenuItemRecord["category"];
   emoji: string;
+  image?: string;
   tag?: string;
   isAvailable: boolean;
   isFeatured: boolean;
@@ -53,6 +54,7 @@ function serializeMenuItem(doc: {
     price: doc.price,
     category: doc.category,
     emoji: doc.emoji,
+    image: doc.image,
     tag: doc.tag,
     isAvailable: doc.isAvailable,
     isFeatured: doc.isFeatured,

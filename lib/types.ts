@@ -15,6 +15,7 @@ export interface MenuItemRecord {
   price: number;
   category: MenuCategory;
   emoji: string;
+  image?: string;
   tag?: string;
   isAvailable: boolean;
   isFeatured: boolean;
